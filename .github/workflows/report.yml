@@ -45,6 +45,7 @@ jobs:
 
       - name: Upload to Sonar
         id: upload-to-sonar
+        if: "github.repository != 'preset-io/sqlalchemy-exasol'"
         env:
           SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
         run: poetry run -- nox -s sonar:check

@@ -1,0 +1,24 @@
+# Preset fork adaptation of the exasol-toolbox workflow templates.
+#
+# Upstream `report.yml` uploads coverage to Exasol's own SonarQube organization
+# using a `SONAR_TOKEN` that only exasol/sqlalchemy-exasol holds. A fork cannot
+# authenticate there and must not be given that secret, so on this fork the
+# upload step is skipped and GitHub CodeQL (.github/workflows/codeql.yml)
+# provides the replacement static-analysis gate.
+#
+# The guard is keyed on `github.repository`, so behaviour is unchanged for
+# exasol/sqlalchemy-exasol and for every other fork: only preset-io skips it.
+# Every lint, security, typing and test job is left untouched.
+workflows:
+  - name: report
+    step_customizations:
+      - action: REPLACE
+        job: report
+        step_id: upload-to-sonar
+        content:
+          - name: Upload to Sonar
+            id: upload-to-sonar
+            if: "github.repository != 'preset-io/sqlalchemy-exasol'"
+            env:
+              SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"
+            run: poetry run -- nox -s sonar:check

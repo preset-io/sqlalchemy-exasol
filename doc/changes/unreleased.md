@@ -2,17 +2,23 @@
 
 ## Summary
 
-## Documentation
+## Bug fixes
 
-* #781: Added Connection Pooling to the User Guide
-* #797: Enhanced example and added documentation for listening to pool events
-* #799: Added session reset to user guide section on Connection Pooling
+* Preserve fractional seconds and naive wall time in websocket TIMESTAMP results.
+* Recognize wrapped PyExasol communication errors as disconnects, enabling
+  SQLAlchemy's pool pre-ping to replace stale connections on the first checkout.
+  Server query/authentication errors are not disconnects; in-flight SQL is not replayed.
 
-## Refactorings
+See issue #807.
 
-* #782: Added an integration test for creating a UDF incl. an example in the User Guide
-* #784: Added test for exception to not reveal the password for connection pool
-* #786: Added test for n+1 `connect()` to block
-* #788: Enabled mypy type checks for tests
-* #792: Added test to verify connections are reused by the connection pool
-* #794: Added test to verify recycle timeout
+## Preset internal build
+
+`7.1.3.1` is a Preset-owned rebuild of upstream `7.1.3` carrying only the two bug
+fixes above. It exists solely as a release-blocker fallback while
+[exasol/sqlalchemy-exasol#808](https://github.com/exasol/sqlalchemy-exasol/pull/808)
+is under maintainer review, and it is published only to Preset's internal index.
+The four-component version follows Preset's existing convention for rebuilt
+third-party packages (for example `pyhive-0.7.0.1`); upstream has only ever
+released three-component versions, and `7.1.3.1` sorts above `7.1.3` and below
+`7.1.4`, so an upstream release supersedes it automatically. It is never
+published to public PyPI.
