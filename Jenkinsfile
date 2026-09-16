@@ -166,18 +166,15 @@ EOF
                         label: 'Refuse to republish an existing version'
                     )
 
-                    // --if-none-match '*' makes this a conditional write: if the
-                    // key appeared between the check above and this call, S3
-                    // rejects it instead of overwriting.
+                    // Jenkins currently ships AWS CLI v1, whose s3api command
+                    // cannot express If-None-Match. Use the current boto3 API so
+                    // the write remains atomic rather than weakening the guard.
                     sh(
                         script: """
                             set -eu
-                            aws s3api put-object \
-                                --bucket '${BUCKET}' \
-                                --key '${key}' \
-                                --body 'upload/${sdist}' \
-                                --if-none-match '*' \
-                                --checksum-algorithm SHA256 >/dev/null
+                            python -m pip install --quiet 'boto3>=1.36,<2'
+                            BUCKET='${BUCKET}' KEY='${key}' ARTIFACT='upload/${sdist}' \
+                                python -c 'import os, boto3; artifact = open(os.environ["ARTIFACT"], "rb"); boto3.client("s3").put_object(Bucket=os.environ["BUCKET"], Key=os.environ["KEY"], Body=artifact, IfNoneMatch="*")'
                         """,
                         label: 'Atomic upload'
                     )
